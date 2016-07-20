@@ -13,6 +13,9 @@ Udp::~Udp()
     //dtor
 }
 int Udp::ParseInfo(const unsigned char *pData, Info* opBuf, unsigned int pktLen){
+//    avoid complier warning
+    pktLen;
+
     udpHeader *uh = (udpHeader*)pData;
     uint16_t dPort = ntohs(uh->destPort);
     uint16_t sPort = ntohs(uh->srcPort);

@@ -1,6 +1,10 @@
+/*
+*   See Copyright Notice in CaptureVideoAndAudio.h
+*   author: orglanss@gmail
+*   功能：捕获电脑内部音频数据
+*/
 #pragma comment(lib, "ole32.lib")
 #include "loopbackRecording.h"
-
 #define REFTIMES_PER_SEC  10000000
 #define REFTIMES_PER_MILLISEC  10000
 
@@ -14,29 +18,29 @@ const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 const IID IID_IAudioClient = __uuidof(IAudioClient);
 const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
-BOOL AdjustFormatTo16Bits(WAVEFORMATEX *pwfx)
+
+BOOL AdjustFormatToFloat(WAVEFORMATEX *pwfx)
 {
 	BOOL bRet(FALSE);
 
-	if(pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT)
-	{
-        pwfx->wBitsPerSample = 32;
-        pwfx->nBlockAlign = pwfx->nChannels * pwfx->wBitsPerSample / 8;
+    if(pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT)
+    {
+        pwfx->wBitsPerSample  = 32;
+        pwfx->nBlockAlign     = pwfx->nChannels * pwfx->wBitsPerSample / 8;
         pwfx->nAvgBytesPerSec = pwfx->nBlockAlign * pwfx->nSamplesPerSec;
-
-		bRet = TRUE;
-	}
+        
+        bRet                  = TRUE;
+    }
 	else if(pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE)
 	{
         PWAVEFORMATEXTENSIBLE pEx = reinterpret_cast<PWAVEFORMATEXTENSIBLE>(pwfx);
         if (IsEqualGUID(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, pEx->SubFormat))
-		{
-           pEx->Samples.wValidBitsPerSample = 32;
-           pwfx->wBitsPerSample = 32;
-           pwfx->nBlockAlign = pwfx->nChannels * pwfx->wBitsPerSample / 8;
-           pwfx->nAvgBytesPerSec = pwfx->nBlockAlign * pwfx->nSamplesPerSec;
-
-		   bRet = TRUE;
+		    {
+            pEx->Samples.wValidBitsPerSample = 32;
+            pwfx->wBitsPerSample             = 32;
+            pwfx->nBlockAlign                = pwfx->nChannels * pwfx->wBitsPerSample / 8;
+            pwfx->nAvgBytesPerSec            = pwfx->nBlockAlign * pwfx->nSamplesPerSec;
+            bRet                             = TRUE;
         }
 	}
 
@@ -62,7 +66,7 @@ void loopbackRecording::getDefaultAudioClient(){
     hr = pAudioClient->GetMixFormat(&pwfx);
 
     EXIT_ON_ERROR(hr)
-    if(!AdjustFormatTo16Bits(pwfx)) return ;
+    if(!AdjustFormatToFloat(pwfx)) return ;
     hr = pAudioClient->Initialize(
                          AUDCLNT_SHAREMODE_SHARED,
                          AUDCLNT_STREAMFLAGS_LOOPBACK,
@@ -75,7 +79,8 @@ Exit:
     ;
 }
 loopbackRecording::loopbackRecording()
-:bDone(false),pwfx(NULL),buffer(NULL), pDevice(NULL), initialized(false),front(0),rear(0),bufferAlready(NULL),recordHandle(NULL),
+:bDone(false),pwfx(NULL),buffer(NULL), pDevice(NULL), 
+initialized(false),front(0),rear(0),bufferAlready(NULL),recordHandle(NULL),
 isPlaying(false)
 {
 
@@ -83,25 +88,26 @@ isPlaying(false)
 bool loopbackRecording::init(){
     HRESULT hr;
 
-    numFramesPerPeriod = 448;
-    CoInitialize(NULL);
+    numFramesPerPeriod = 448; // default frames size can be change to adapt with different 
+    // environment
+    CoInitialize(NULL); // must be initialize before calling getDefaultDevice and should
     getDefaultDevice();
     if(!pDevice)return false;
     getDefaultAudioClient();
     if(!pAudioClient)return false;
 
-        // Get the size of the allocated buffer.
-
-    hr = pAudioClient->GetService(
-                         IID_IAudioCaptureClient,
-                         (void**)&pCaptureClient);
-    EXIT_ON_ERROR(hr)
-
-    // Notify the audio sink which format to use.
-
-    EXIT_ON_ERROR(hr)
-
-    // Calculate the actual duration of the allocated buffer.
+     // Get the size of the allocated buffer.
+     
+     hr    = pAudioClient->GetService(
+     IID_IAudioCaptureClient,
+     (void **)&pCaptureClient);
+     EXIT_ON_ERROR(hr)
+     
+     // Notify the audio sink which format to use.
+     
+     EXIT_ON_ERROR(hr)
+     
+     // Calculate the actual duration of the allocated buffer.
 
     hr = pAudioClient->Start();  // Start recording.
     initialized = true;
@@ -119,22 +125,20 @@ bool loopbackRecording::readParam(int *channles, int *sampleRate){
 bool loopbackRecording::copyData(BYTE* pData, UINT32 numFramesAvailable){
     int size = numFramesAvailable * pwfx->nBlockAlign;
 
-    if(bufferSize + size > bufferCapacity)return false;
+    if(bufferedBytes + size > bufferCapacity)return false;
     if(pData == NULL){
         // silence
-
         if((rear >= front) && (rear + size <= bufferCapacity) \
         || (rear < front)&& (rear + size <= front)){
             memset(buffer + rear, 0, size);
             rear += size;
-
         }else{
-			int size1 = bufferCapacity - rear;
-			int size2 = size - size1;
-			memset(buffer + rear, 0, size1);
-			memset(buffer, 0, size2);
-			rear =  size2;
-		}
+    			int size1 = bufferCapacity - rear;
+    			int size2 = size - size1;
+    			memset(buffer + rear, 0, size1);
+    			memset(buffer, 0, size2);
+    			rear =  size2;
+		    }
     }else{
 		if((rear >= front) && (rear + size <= bufferCapacity) \
 		  || (rear < front)&& (rear + size <= front)){
@@ -148,41 +152,41 @@ bool loopbackRecording::copyData(BYTE* pData, UINT32 numFramesAvailable){
 			rear =  size2;
 		}
 	}
-	bufferSize += size;
+	bufferedBytes += size;
 	return true;
 }
 int loopbackRecording::readFrame(int requestBufferLength, float* pdata){
-  DWORD dwWaitResult;
-  int tryTime = readTryTimeFatcor *  requestBufferLength / (numFramesPerPeriod * pwfx->nBlockAlign) ;
   int i,j, newFront;
   int numFramesToRead = requestBufferLength / pwfx->nBlockAlign;
   if(requestBufferLength % pwfx->nBlockAlign)return LPBR_ERROR;
-//  while( bufferSize < requestBufferLength && tryTime--){
-//    dwWaitResult = WaitForSingleObject(bufferAlready, INFINITE);
+//  while( bufferedBytes < requestBufferLength && tryTime--){
+//    dwWaitResult = WaitForSingleObjejct(bufferAlready, INFINITE);
 //  }
-//  if(bufferSize == 0){
+//  if(bufferedBytes == 0){
 //      printf("silence\n");
 //        return LPBR_SILENCE;
 //  }
-  if(bufferSize < requestBufferLength){
+  if(bufferedBytes < requestBufferLength){
         return LPBR_NOALREADY;
-//    memset(buffer + rear, 0, requestBufferLength - bufferSize);
-//    rear += requestBufferLength - bufferSize;
+//    memset(buffer + rear, 0, requestBufferLength - bufferedBytes);
+//    rear += requestBufferLength - bufferedBytes;
 //    if(rear == bufferCapacity)rear = 0;
-//    bufferSize = requestBufferLength;
+//    bufferedBytes = requestBufferLength;
 //    printf("set to 0\n");
   }
-
+  // buffer size is n times encoder require frame  size 
+  // request buffer length should be equal to the size so front modulo requestBufferLength 
+  // should be zero
   if(!(front%requestBufferLength)){
     float *pBuffer = (float *)(buffer+front);
     for(i = 0;i < numFramesToRead; i++ )
       for(j = 0;j < pwfx->nChannels; j++){
        pdata[j * numFramesToRead + i ] = *pBuffer++;
     }
-    newFront = front + requestBufferLength;
+    newFront = front + requestBufferLength; // for multi thread safety
     if(newFront == bufferCapacity)newFront = 0;
-	front = newFront;
-    bufferSize -= requestBufferLength;
+	   front = newFront;
+    bufferedBytes -= requestBufferLength;
     return LPBR_SUCCESS;
   }
   printf("error in readFrame\n");
@@ -198,7 +202,6 @@ HRESULT loopbackRecording::RecordAudioStream()
     DWORD flags;
     DWORD dwWaitResult;
     REFERENCE_TIME hnsDefaultDevicePeriod(0), hnsActualDuration(0);
-    UINT32 numFramesToCopy;
     UINT32 bufferFrameCount;
     UINT32 noPacketCnt = 0;
     hr = pAudioClient->GetBufferSize(&bufferFrameCount);
@@ -254,12 +257,10 @@ HRESULT loopbackRecording::RecordAudioStream()
                 pData = NULL;  // Tell CopyData to write silence.
             }
 
-//            // Copy the available capture data to the audio sink.
-//            hr = pMySink->CopyData(
-//                              pDapCaptureClientta, numFramesAvailable, &bDone);
+//            // Copy the available capture data to buffer
             if(!copyData(pData, numFramesAvailable)){
                 printf("error in copyData\n");
-                printf("buffersize:%d,bufferCapacity:%d\n",bufferSize, bufferCapacity);
+                printf("bufferedBytes:%d,bufferCapacity:%d\n",bufferedBytes, bufferCapacity);
             }
             hr = pCaptureClient->ReleaseBuffer(numFramesAvailable);
             EXIT_ON_ERROR(hr)
@@ -287,7 +288,7 @@ UINT __stdcall loopbackRecording::recordThread(void *param){
 bool loopbackRecording::open(int requestBufferLength){
   if(!initialized)return false;
   bufferCapacity = requestBufferLength*bufferFactor;
-  bufferSize = 0;
+  bufferedBytes = 0;
   buffer = (BYTE*)malloc(bufferCapacity);
   recordHandle = (HANDLE)_beginthreadex(NULL, NULL, recordThread, (void*)this, 0, NULL);
   if(recordHandle == NULL) return false;

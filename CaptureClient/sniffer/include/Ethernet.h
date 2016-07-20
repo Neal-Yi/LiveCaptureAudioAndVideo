@@ -1,15 +1,19 @@
+/*
+*   See Copyright Notice in CaptureVideoAndAudio.h
+*   author: orglanss@gmail
+    以太网协议解析类, 继承自Layer类
+*/
 #ifndef ETHERNET_H
 #define ETHERNET_H
 #include "Layer.h"
 typedef struct{
-    uint8_t etherDstHost[6]; //目的Mac地址
-    uint8_t etherSrcHost[6]; //源Mac地址
-    uint16_t etherType;    //协议类型
+    uint8_t etherDstHost[6];//目的Mac地址
+    uint8_t etherSrcHost[6];//源Mac地址
+    uint16_t etherType;     //协议类型
 }ethernetHeader;
 class Ethernet: public Layer
 {
     public:
-
         Ethernet();
         virtual ~Ethernet();
         int ParseInfo(const unsigned char* pData, Info* opBuf , unsigned int pktLen);

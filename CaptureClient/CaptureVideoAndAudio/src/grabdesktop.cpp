@@ -1,4 +1,8 @@
-
+/*
+*   See Copyright Notice in CaptureVideoAndAudio.h
+*   author: orglanss@gmail
+*   功能：捕获原始桌面图像
+*/
 #include "ffmpeg.h"
 #include "grabdesktop.h"
 #ifdef Debug
@@ -15,7 +19,8 @@ videoDecode* grabdesktopInit(int frameRate){
     unsigned int videoIndex;
 
     desktopDec = (videoDecode*)malloc(sizeof(videoDecode));
-    avdevice_register_all();
+    // init gdigrab
+    avdevice_register_all(); //用到了gdigrab
     sprintf(strFrameRate,"%d",frameRate);
     pftx = avformat_alloc_context();
     av_dict_set(&opt,"framerate", strFrameRate, 0 );
@@ -29,9 +34,11 @@ videoDecode* grabdesktopInit(int frameRate){
         printf("Couldn't find screen stream info\n");
         ERROR_EXIT
     }
+    // skip to video stream
     for(videoIndex=0;
-    videoIndex < pftx->nb_streams && pftx->streams[videoIndex]->codec->codec_type != AVMEDIA_TYPE_VIDEO;
-     videoIndex ++);
+            videoIndex < pftx->nb_streams &&
+            pftx->streams[videoIndex]->codec->codec_type != AVMEDIA_TYPE_VIDEO;
+                videoIndex ++);
     if(videoIndex == pftx->nb_streams){
         printf("Didn't find a video stream\n");
         ERROR_EXIT;
@@ -60,17 +67,19 @@ Exit:
 unsigned int __stdcall readFrameThread(void *desktopDecParam){
     videoDecode* desktopDec = (videoDecode*)desktopDecParam;
     if(!desktopDec)return false;
-	int i = 0;
 	AVPacket* pkt = new AVPacket();
 	AVFrame* frame = av_frame_alloc();
+
     av_init_packet(pkt);
     pkt->data = NULL;
     pkt->size = 0;
 	int gotOutput=0;
+    desktopDec->frame->data[0] = desktopDec->tmpFrame->buffer; //output data address
 #ifdef Debug
 	clock_t time ;
 #endif
-    while(!desktopDec->bDone && av_read_frame(desktopDec->pftx, pkt)>=0){
+    while(!desktopDec->bDone && av_read_frame(desktopDec->pftx, pkt)>=0 /*this part takes a lot time 
+    because of sleep method*/){
 #ifdef Debug
 		time = clock();
 		std::cout<<"readScreen:"<<time<<std::endl;
@@ -86,6 +95,7 @@ unsigned int __stdcall readFrameThread(void *desktopDecParam){
 	 
 	   desktopDec->loadFrame->pushElement(frame->data[0], framesize); 
     }
+    av_frame_free(&frame);
     return true;
 }
 
@@ -109,9 +119,8 @@ bool grabdesktopOpen(videoDecode *desktopDec){
 
 bool grabdesktopReadFrame(videoDecode *desktopDec){
     if(!desktopDec)return false;
-	if(desktopDec->loadFrame->remainBytes <= 4 )return false;
+    if(desktopDec->loadFrame->isNoElement() )return false;
 	desktopDec->loadFrame->readElement(desktopDec->tmpFrame->buffer, desktopDec->tmpFrame->capacity);
-	desktopDec->frame->data[0] = desktopDec->tmpFrame->buffer;
 
     return true;
 }

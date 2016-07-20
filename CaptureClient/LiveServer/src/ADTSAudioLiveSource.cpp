@@ -1,27 +1,9 @@
-/**********
-This library is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
-option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
-This library is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
-more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this library; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-**********/
-// "liveMedia"
-// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
-// A source object for AAC audio files in ADTS format
-// Implementation
 
 #include "ADTSAudioLiveSource.h"
 #include "InputFile.hh"
 #include <GroupsockHelper.hh>
-
+#include <QDebug>
 ////////// ADTSAudioLiveSource //////////
 
 static unsigned const samplingFrequencyTable[16] = {
@@ -33,6 +15,10 @@ static unsigned const samplingFrequencyTable[16] = {
 
 ADTSAudioLiveSource*
 ADTSAudioLiveSource::createNew(UsageEnvironment& env, Buffer* buf) {
+   while(buf->isEmpty()){
+        Sleep(1);
+        qDebug()<<buf->remainBytes;
+   }
   do {
     if (buf == NULL) break;
 
@@ -87,7 +73,7 @@ ADTSAudioLiveSource
 ::ADTSAudioLiveSource(UsageEnvironment& env, Buffer* buf, u_int8_t profile,
 		      u_int8_t samplingFrequencyIndex, u_int8_t channelConfiguration)
   : FramedSource(env) {
-	data = buf;
+	data = buf; // store adts data address
   fSamplingFrequency = samplingFrequencyTable[samplingFrequencyIndex];
   fNumChannels = channelConfiguration == 0 ? 2 : channelConfiguration;
   fuSecsPerFrame
@@ -110,6 +96,9 @@ ADTSAudioLiveSource::~ADTSAudioLiveSource() {
 void ADTSAudioLiveSource::doGetNextFrame() {
   // Begin by reading the 7-byte fixed_variable headers:
   unsigned char headers[7];
+  while(data->isEmpty()){
+      Sleep(1); // wait for encoding proccess
+  }
   if (data->read(headers,sizeof headers) < sizeof headers ) {
     // The input source has ended:
     handleClosure();

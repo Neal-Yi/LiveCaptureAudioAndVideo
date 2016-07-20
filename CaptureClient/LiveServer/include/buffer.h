@@ -40,7 +40,7 @@ public:
 	//notice: the output pointer must have been allocated with size more the "maxLength"
 	int readElement(void* to,int maxLength);
 	static Buffer* createNew(int bufferSize);
-	bool isEmpty()const{return remainBytes == 0;};
+    bool isEmpty()const{return remainBytes == 0;}
 	bool isNoElement() const{return remainBytes <= sizeof(int);}
 	int flush(void* to, int maxLength);
 	void rewind();

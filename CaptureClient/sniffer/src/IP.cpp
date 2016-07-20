@@ -14,6 +14,7 @@ IP::~IP()
     //dtor
 }
 int IP::ParseInfo(const unsigned char* pData, Info* opBuf, unsigned int len){
+    len;//avoid commplier warning
     ipHeader *ih = (ipHeader*)pData;
     size = (ih->verIhl & 0x0f) * 4;
     opBuf->dstInfo.push(iptostr(ih->daddr));

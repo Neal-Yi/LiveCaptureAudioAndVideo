@@ -38,12 +38,11 @@ bool CapRTSPLive::open(liveBuffer *liveSource, int audioBitrate, int videoBitrat
 		return true;
 	}
 	bool reuseFirstSource = false;
-	bool iFramesOnly = false;
 	bDone = NULL;
 	scheduler = BasicTaskScheduler::createNew();
 	env = BasicUsageEnvironment::createNew(*scheduler);
 	UserAuthenticationDatabase* authDB = NULL;
-	RTSPServer* rtspServer = RTSPServer::createNew(*env, port, authDB);
+    rtspServer = RTSPServer::createNew(*env, port, authDB);
 	if (rtspServer == NULL) {
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
 		return false;
@@ -71,9 +70,10 @@ unsigned int __stdcall liveRTSPThread(void* param){
 	return 0;
 }
 bool CapRTSPLive::close(){
-	if(bDone == true)return false; // not created
+    if(bDone)return false; // not created
 	bDone = true;
 	if(!liveThreadFinished)WaitForSingleObject(hlive,INFINITE);
 	data->isLive = false;
+    Medium::close(rtspServer);
 	return true;
 }

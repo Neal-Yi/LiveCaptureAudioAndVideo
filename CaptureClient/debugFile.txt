@@ -55,3 +55,95 @@ Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
 We are completely uploaded and fine
 Remembering we are in dir "/test/"
 Connection #0 to host 127.0.0.1 left intact
+timeout on name lookup is not supported
+  Trying 127.0.0.1...
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Entry path is '/'
+ftp_perform ends with SECONDARY: 0
+Connect data stream passively
+  Trying 127.0.0.1...
+Connecting to 127.0.0.1 (127.0.0.1) port 4239
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Remembering we are in dir "/test/"
+Connection #0 to host 127.0.0.1 left intact
+timeout on name lookup is not supported
+  Trying 127.0.0.1...
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Entry path is '/'
+ftp_perform ends with SECONDARY: 0
+Connect data stream passively
+  Trying 127.0.0.1...
+Connecting to 127.0.0.1 (127.0.0.1) port 4242
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+We are completely uploaded and fine
+Remembering we are in dir "/test/"
+Connection #0 to host 127.0.0.1 left intact
+timeout on name lookup is not supported
+  Trying 127.0.0.1...
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Entry path is '/'
+ftp_perform ends with SECONDARY: 0
+Connect data stream passively
+  Trying 127.0.0.1...
+Connecting to 127.0.0.1 (127.0.0.1) port 4245
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Remembering we are in dir "/test/"
+Connection #0 to host 127.0.0.1 left intact
+timeout on name lookup is not supported
+  Trying 127.0.0.1...
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Entry path is '/'
+ftp_perform ends with SECONDARY: 0
+Connect data stream passively
+  Trying 127.0.0.1...
+Connecting to 127.0.0.1 (127.0.0.1) port 4248
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+We are completely uploaded and fine
+Remembering we are in dir "/test/"
+Connection #0 to host 127.0.0.1 left intact
+timeout on name lookup is not supported
+  Trying 127.0.0.1...
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Entry path is '/'
+ftp_perform ends with SECONDARY: 0
+Connect data stream passively
+  Trying 127.0.0.1...
+Connecting to 127.0.0.1 (127.0.0.1) port 4275
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Remembering we are in dir "/test/"
+Connection #0 to host 127.0.0.1 left intact
+timeout on name lookup is not supported
+  Trying 127.0.0.1...
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Entry path is '/'
+ftp_perform ends with SECONDARY: 0
+Connect data stream passively
+  Trying 127.0.0.1...
+Connecting to 127.0.0.1 (127.0.0.1) port 4278
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+We are completely uploaded and fine
+Remembering we are in dir "/test/"
+Connection #0 to host 127.0.0.1 left intact
+timeout on name lookup is not supported
+  Trying 127.0.0.1...
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Entry path is '/'
+ftp_perform ends with SECONDARY: 0
+Connect data stream passively
+  Trying 127.0.0.1...
+Connecting to 127.0.0.1 (127.0.0.1) port 4281
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Remembering we are in dir "/test/"
+Connection #0 to host 127.0.0.1 left intact
+timeout on name lookup is not supported
+  Trying 127.0.0.1...
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+Entry path is '/'
+ftp_perform ends with SECONDARY: 0
+Connect data stream passively
+  Trying 127.0.0.1...
+Connecting to 127.0.0.1 (127.0.0.1) port 4284
+Connected to 127.0.0.1 (127.0.0.1) port 21 (#0)
+We are completely uploaded and fine
+Remembering we are in dir "/test/"
+Connection #0 to host 127.0.0.1 left intact

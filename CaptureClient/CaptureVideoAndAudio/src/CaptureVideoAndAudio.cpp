@@ -1,4 +1,10 @@
 
+/*
+*   See Copyright Notice in CaptureVideoAndAudio.h
+*   author: orglanss@gmail
+*   功能：完成音视频的录制与编码，编码的后封装为mp4，并能将编码后的H264码
+*   流与ADTS码流提供给直播单元
+*/
 #include "CaptureVideoAndAudio.h"
 #include "CapRTSPLive.h"
 #define ADTS_MAX_FRAME_BYTES ((1<<13)-1)
@@ -6,6 +12,8 @@ void chechNULL(void* s, char const* str){
     if(s == NULL)printf("%s\n", str);
     exit(1);
 }
+// 通过avio将编码后的数据放至缓存，avio 中使用的数据保存
+// 方法实现如下，更多参见FFmpeg avio
 int writepacket(void *opaque, uint8_t *buf, int buf_size){
    Buffer* liveSource = (Buffer*)opaque;
    if(!liveSource->push((uint8_t*)buf, buf_size)){
@@ -13,6 +21,7 @@ int writepacket(void *opaque, uint8_t *buf, int buf_size){
    }
    return buf_size;
 }
+// 创建aviocontext
 void avBufferFormatContext(AVFormatContext *pftx, Buffer* ioBuffer, Buffer* liveSource )
 {
 	if(ioBuffer == NULL){
@@ -22,14 +31,16 @@ void avBufferFormatContext(AVFormatContext *pftx, Buffer* ioBuffer, Buffer* live
     pftx->pb = ioctx;
 	
 }
+// 创建输出流的FormatContext
 void capAllocLiveFormatContext(CapFormatCtx *cftx, liveBuffer* ioLiveBuffer, liveBuffer* liveSource){
 	
 	avformat_alloc_output_context2(&cftx->liveAudioCtx,NULL,"adts", NULL);
 	avBufferFormatContext(cftx->liveAudioCtx,ioLiveBuffer->audioBuf, liveSource->audioBuf);
-	avformat_alloc_output_context2(&cftx->liveVideoCtx,NULL,"h264", NULL);//!!!
+	avformat_alloc_output_context2(&cftx->liveVideoCtx,NULL,"h264", NULL);
 	avBufferFormatContext(cftx->liveVideoCtx,ioLiveBuffer->videoBuf, liveSource->videoBuf);
 
 }
+// 注意写完帧后进行数空间释放
 int interleaved_write_frame(AVFormatContext *fmt_ctx, const AVRational *time_base, int streamIndex, AVPacket *pkt)
 {
     /* rescale output packet timestamp values from codec to stream timebase */
@@ -118,19 +129,20 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
 
     bool *isLive = &liveSource->isLive;
     int ret;
-    int liveAudioBufferSize, liveVideoBufferSize, ioAudioBufferSize, ioVideoBufferSize;
+    // buffer size during living
+    int ioAudioBufferSize, ioVideoBufferSize;
 	liveBuffer* ioBuffer = NULL;
     struct SwsContext *imgConvertCtx;
     // setting parameters
-    {// vBitRate, aBitRate,frameRate
-        // if(!vBitRate)vBitRate = 400000;
-        // if(!aBitRate)aBitRate = 64000;
-        // if(!frameRate)frameRate = 25;
-        // float delaySecs = 10.0;
-        // liveAudioBufferSize = delaySecs * aBitRate / 8;
-        // liveVideoBufferSize = delaySecs * vBitRate / 8;
+    // {// vBitRate, aBitRate,frameRate
+    //     // if(!vBitRate)vBitRate = 400000;
+    //     // if(!aBitRate)aBitRate = 64000;
+    //     // if(!frameRate)frameRate = 25;
+    //     // float delaySecs = 10.0;
+    //     // liveAudioBufferSize = delaySecs * aBitRate / 8;
+    //     // liveVideoBufferSize = delaySecs * vBitRate / 8;
 
-    }
+    // }
     // open output
 
     {
@@ -144,7 +156,7 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
 			}
 		}
     }
-        // init grabdesktop here
+    // init grabdesktop here
 
     // initialize AudioRecord  and grabdesktop
     {
@@ -163,7 +175,7 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
             return false;
         }
     }
-    // setting codec and codecotext
+    // setting codec and codecontext
 
     {
         aCodec = avcodec_find_encoder(AV_CODEC_ID_AAC);
@@ -226,7 +238,8 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
 		{
 			videoStream = avformat_new_stream(pftx.fileCtx, vCodec);
 			videoStream->codec = vCtx;
-			videoStream->id = pftx.fileCtx->nb_streams - 1;
+			videoStream->id = pftx.fileCtx->nb_streams - 1; /*每次执行new_stream方法后，nb_streams都加1，
+             这样流id就应设为nb_streams - 1*/
 			videoStream->time_base = vCtx->time_base;
 			if (pftx.fileCtx->oformat->flags & AVFMT_GLOBALHEADER)
 					vCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
@@ -249,7 +262,7 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
         aFrame->channel_layout = aCtx->channel_layout;
         aBufferSize = av_samples_get_buffer_size(NULL, aCtx->channels, aCtx->frame_size,
                                              aCtx->sample_fmt, 0);
-        ioAudioBufferSize = ADTS_MAX_FRAME_BYTES;
+        ioAudioBufferSize = ADTS_MAX_FRAME_BYTES; // 直播时音频缓存大小
         if (aBufferSize < 0) {
             fprintf(stderr, "Could not get sample buffer size\n");
             return false;
@@ -283,11 +296,10 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
 
 
     {
-
+        // aBufferSize也为一帧音频数据的大小
         AudioRecord.open(aBufferSize);
         grabdesktopOpen(desktopDec);
     }
-	clock_t time;
     // compare next_pts and write frame until end
     {
         vts = 0, ats = 0;
@@ -298,7 +310,7 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
 			if(*isLive){
                 if(!isLiveSourceInit){
                     isLiveSourceInit = true;
-                    //rest part could be done before this loop
+                    //TODO rest part could be done before this loop
 					ioBuffer = new liveBuffer();
 					ioBuffer->init(ioAudioBufferSize, ioVideoBufferSize);
 					capAllocLiveFormatContext(&pftx,ioBuffer,liveSource);
@@ -308,8 +320,8 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
 					st = avformat_new_stream(pftx.liveVideoCtx, vCodec);
 					st->codec = vCtx;
 					st->time_base = vCtx->time_base;
-					avformat_write_header(pftx.liveAudioCtx,NULL);
-					avformat_write_header(pftx.liveVideoCtx,NULL);
+					avformat_write_header(pftx.liveAudioCtx,NULL); //十分重要，它写入了ADTS包头
+					avformat_write_header(pftx.liveVideoCtx,NULL); 
                 }
             }else if(isLiveSourceInit){
 				delete ioBuffer;
@@ -334,7 +346,6 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
                             break;
                         }
                         if(gotOutput){
-							int size = pkt->size;
 							//fwrite(pkt->data,1, size, f);
 						  	capOutVideoFrame(&pftx, &vCtx->time_base, videoIndex, pkt,*isLive);
 							//printf("videoOut:%ld", clock());
@@ -346,7 +357,7 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
 				if(AudioRecord.isPlaying == false){
 					memset(samples, 0, aBufferSize);
 				}
-				if(ret == LPBR_SUCCESS || AudioRecord.isPlaying == false){
+				if(ret == LPBR_SUCCESS || AudioRecord.isPlaying == false/*避免持续等待以使视频缓存用尽*/){
 					ats += aFrame->nb_samples;
 					aFrame->pts = ats;
 					//printf("gotAudio:%ld", clock());
@@ -362,16 +373,17 @@ bool captureVideoAndAudio(int vBitRate, int aBitRate, int frameRate, const char 
 						//printf("audioOut:%ld", clock());
                     }
                 }
-				Sleep(1);
+                Sleep(1);
             }
 
             av_packet_unref(pkt);
         }
-        // flush
+  
 
         AudioRecord.close();
         grabdesktopClose(desktopDec);
         bool vflushed = false, aflushed = false;
+        // flush encoders
         while(!vflushed || !aflushed){
             av_init_packet(pkt);
 
@@ -444,7 +456,7 @@ bool CaptureVideoAndAudio::stop(){
     return true;
 }
 CaptureVideoAndAudio::CaptureVideoAndAudio()
-:vBitRate(200000),aBitRate(64000),frameRate(10),liveSource(NULL)
+:vBitRate(400000),aBitRate(64000),frameRate(10),liveSource(NULL)
 {
     //ctor
     strcpy(filename,"test.mp4");

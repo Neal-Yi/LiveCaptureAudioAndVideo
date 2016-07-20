@@ -1,5 +1,5 @@
 #include "H264LiveSource.h"
-
+#include "QDebug"
 H264LiveSource::H264LiveSource(UsageEnvironment& env,
         Buffer* buf,
         unsigned preferredFrameSize ,
@@ -24,11 +24,14 @@ H264LiveSource* H264LiveSource::createNew(UsageEnvironment& env,
             return new H264LiveSource(env, buf,preferredFrameSize, playTimePerFrame);
 }
 void H264LiveSource::doGetNextFrame(){
-	int i=0;
-	while(data->isNoElement()){
-		Sleep(1);
-		i++;
+	// int i=0;
+    while(data->isEmpty()){
+		Sleep(1);// wait for encoding proccess
+        // qDebug()<<data->remainBytes;
+		// i++;
+
 	}
+	// set read size
     if(fPreferredFrameSize > 0 && fMaxtoPreferredRatio * fPreferredFrameSize < fMaxSize ){
 
         fMaxSize = fMaxtoPreferredRatio * fPreferredFrameSize;

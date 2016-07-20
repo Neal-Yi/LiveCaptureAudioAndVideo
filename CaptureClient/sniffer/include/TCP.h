@@ -1,3 +1,9 @@
+
+/*
+*   See Copyright Notice in CaptureVideoAndAudio.h
+*   author: orglanss@gmail
+    TCP协议解析类，继承自Layer类
+*/
 #ifndef TCP_H
 #define TCP_H
 #include <Layer.h>
@@ -5,10 +11,10 @@
 #define __LITTLE_ENDIAN_BITFIELD
 typedef struct
 {
-    uint16_t   source_port;         /*源地址端口*/
-    uint16_t   dest_port;           /*目的地址端口*/
-    uint32_t   seq;            /*序列号*/
-    uint32_t   ack_seq;        /*确认序列号*/
+    uint16_t   source_port;/*源地址端口*/
+    uint16_t   dest_port;  /*目的地址端口*/
+    uint32_t   seq;        /*序列号*/
+    uint32_t   ack_seq;    /*确认序列号*/
 #if defined(__LITTLE_ENDIAN_BITFIELD)
     uint16_t res1:4,   /*保留*/
     doff:4,             /*偏移*/

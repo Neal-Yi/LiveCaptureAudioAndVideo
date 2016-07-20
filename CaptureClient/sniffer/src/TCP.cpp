@@ -13,6 +13,7 @@ TCP::~TCP()
     //dtor
 }
 int TCP::ParseInfo(const unsigned char* pData, Info* opBuf , unsigned int pktLen){
+    pktLen;// avoid complier warning
     const tcpHeader *th = (const tcpHeader*)pData;
     uint16_t dPort = ntohs(th->dest_port);
     uint16_t sPort = ntohs(th->source_port);

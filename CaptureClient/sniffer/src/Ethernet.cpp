@@ -13,6 +13,7 @@ Ethernet::~Ethernet()
     //dtor
 }
 int Ethernet::ParseInfo(const unsigned char *pData, Info* opBuf, unsigned int pktLen){
+    pktLen;//avoid commplier warning
     ethernetHeader *eh = (ethernetHeader*)pData;
     opBuf->dstInfo.push(mactostr(eh->etherDstHost) + " ");
     opBuf->srcInfo.push(mactostr(eh->etherSrcHost) + " ");

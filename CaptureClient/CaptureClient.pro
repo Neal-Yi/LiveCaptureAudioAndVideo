@@ -33,6 +33,8 @@ SOURCES += main.cpp\
     CaptureVideoAndAudio/src/grabdesktop.cpp \
     CaptureVideoAndAudio/src/loopbackRecording.cpp
 
+DEFINES += _XKEYCHECK_H
+
 HEADERS  += \
     mainwindow.h \
     sniffer/include/Ethernet.h \
@@ -69,6 +71,8 @@ INCLUDEPATH +=./ffmpeg/include \
             ./CaptureVideoAndAudio/include\
             ./util\
 
-LIBS += -L./ffmpeg/lib -lavcodec -lavformat -lswscale -lavdevice -lavutil\
-        -L./WpdPack/Lib -lPacket -lwpcap\
-        -L./Live555/lib -lBasicUsageEnvironment -lgroupsock -lliveMedia -lUsageEnvironment
+LIBS += -L$$PWD/ffmpeg/lib -lavcodec -lavformat -lswscale -lavdevice -lavutil\
+        -L$$PWD/WpdPack/Lib -lPacket -lwpcap\
+        -L$$PWD/Live555/lib -lBasicUsageEnvironment -lgroupsock -lliveMedia -lUsageEnvironment
+
+

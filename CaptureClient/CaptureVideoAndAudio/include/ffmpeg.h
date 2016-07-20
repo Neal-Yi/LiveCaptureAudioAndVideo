@@ -1,4 +1,8 @@
-
+/*
+*	See Copyright Notice in CaptureVideoAndAudio.h
+* 	author: orglanss@gmail
+*	ffmpeg的头文件封装
+*/
 #ifndef FFMPEG_H
 #define FFMPEG_H
 #define __STDC_CONSTANT_MACROS

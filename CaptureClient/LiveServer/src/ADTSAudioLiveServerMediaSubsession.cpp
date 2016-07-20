@@ -9,7 +9,7 @@ ADTSAudioLiveServerMediaSubsession* ADTSAudioLiveServerMediaSubsession::
 ADTSAudioLiveServerMediaSubsession::ADTSAudioLiveServerMediaSubsession
 	(UsageEnvironment& env,Buffer* buf,int bitRate, bool reuseFirstSource)
 	:ADTSAudioFileServerMediaSubsession(env, NULL, reuseFirstSource){
-		setBitRate = bitRate;
+		setBitRate = bitRate; //save bitrate for set estBitrate
 		data = buf;
 }
 
